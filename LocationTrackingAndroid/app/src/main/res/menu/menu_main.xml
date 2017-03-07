@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/my_toggle"
+        android:title=""
+        app:showAsAction="always"
+        app:actionLayout="@layout/toggle_button_layout" />
+    <item
+        android:id="@+id/add_node"
+        android:title="Add Node"
+        android:showAsAction="always"
+        />
+    <item
+        android:id="@+id/remove_node"
+        android:title="Remove Node"
+        android:showAsAction="always"
+        />
+</menu>

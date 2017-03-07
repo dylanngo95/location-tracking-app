@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Location Tracking</string>
+    <string name="drawer_open">Open</string>
+    <string name="drawer_close">Close</string>
+    <string name="create_group">Create Groups</string>
+    <string name="google_maps_key">AIzaSyDmrlLkAsxCFjQKEwj1PG7NnAJh1Ci1wJk</string>
+</resources>

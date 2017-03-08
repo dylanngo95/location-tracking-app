@@ -7,6 +7,7 @@ import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,7 +36,6 @@ import com.jundat95.locationtracking.Model.ResponseModel;
 import com.jundat95.locationtracking.R;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 
@@ -62,7 +62,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
     private List<Polyline> listPolyline = new ArrayList<>();
     private List<LatLng> listLatLng = new ArrayList<>();
     // list temp, save idNode
-    private List<Integer> listTemp = new ArrayList<>();
+    private List<Integer> listIdNode = new ArrayList<>();
     // List save list List<DataModel>
     private List<List<DataModel>> listDataModels = new ArrayList<>();
 
@@ -70,6 +70,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
 
 
     private boolean onPut = false;
+    private boolean moveCamera = true;
     private int selectNode = 0;
 
     public static MapsFragment newInstance(AppCompatActivity context) {
@@ -136,25 +137,13 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
 
     public void requestServer() {
 
-        if (!onPut) {
-//            Toast.makeText(
-//                    context,
-//                    "Update Very Error",
-//                    Toast.LENGTH_SHORT
-//            ).show();
+        Log.d(Main_Activity,"Start Request");
+        if (selectNode == 0) {
+            getAllPositions();
         } else {
-            if (selectNode == 0) {
-                getAllPositions();
-            } else {
-                getPosition(selectNode);
-            }
-//            Toast.makeText(
-//                    context,
-//                    "Update  Success",
-//                    Toast.LENGTH_SHORT
-//            ).show();
+            getPosition(selectNode);
         }
-
+        Log.d(Main_Activity,"Stop Request------------->>>");
 
     }
 
@@ -163,7 +152,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
         @Override
         public void run() {
             requestServer();
-            mHandler.postDelayed(mRunable,1000);
+            mHandler.postDelayed(mRunable,3000);
         }
     };
 
@@ -175,7 +164,16 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
                 if(response.isSuccessful()){
                     ResponseModel responseModel = response.body();
                     dataModels.addAll(responseModel.getData());
-                    paintMarkerAll();
+                    processListDataModel();
+                    if(dataModels.size() > 0){
+                        paintMarkerAll();
+                    }else {
+                        Toast.makeText(
+                                context,
+                                "Waiting for location tracking",
+                                Toast.LENGTH_LONG
+                        ).show();
+                    }
                 }else {
                     Toast.makeText(
                             context,
@@ -241,12 +239,12 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
             }
             if(!isOccur){
                 countItem ++;
-                listTemp.add(a);
+                listIdNode.add(a);
             }
         }
         // Create array list polylines
 
-        for (Integer item1: listTemp){
+        for (Integer item1: listIdNode){
             List<DataModel> temp = new ArrayList<>();
             for(DataModel item2 : dataModels){
                 if(Integer.parseInt(item2.getNode()) == item1){
@@ -281,9 +279,16 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
 
             listPolyline.add(polyline);
         }
-        if(listLatLng.size() > 0){
+
+        if(onPut){
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(listLatLng.get(listLatLng.size()-1), 30));
+        }else {
+            if(listLatLng.size() > 0 && moveCamera){
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(listLatLng.get(listLatLng.size()-1), 30));
+                moveCamera = false;
+            }
         }
+
     }
 
     // Get position
@@ -295,7 +300,16 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
                 if(response.isSuccessful()){
                     ResponseModel responseModel = response.body();
                     dataModels.addAll(responseModel.getData());
-                    paintMarker();
+                    processListDataModel();
+                    if(dataModels.size() > 0){
+                        paintMarker();
+                    }else {
+                        Toast.makeText(
+                                context,
+                                "Waiting for location tracking",
+                                Toast.LENGTH_LONG
+                        ).show();
+                    }
                 }else {
                     Toast.makeText(
                             context,
@@ -346,8 +360,14 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
         );
 
         listPolyline.add(polyline);
-        if(listLatLng.size() > 0){
+
+        if(onPut){
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(listLatLng.get(listLatLng.size()-1), 30));
+        }else {
+            if(listLatLng.size() > 0 && moveCamera){
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(listLatLng.get(listLatLng.size()-1), 30));
+                moveCamera = false;
+            }
         }
 
         removeRefuses();
@@ -357,7 +377,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
         dataModels.clear();
         listDataModels.clear();
         listLatLng.clear();
-        listTemp.clear();
+        listIdNode.clear();
     }
 
     // Remove maker, clear list
@@ -379,17 +399,18 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
         }
     }
 
-    private LatLng convertPositionToLatLng(String x, String y){
-        try {
-            Double lat = Double.parseDouble(x);
-            Double lng = Double.parseDouble(y);
-            return new LatLng(lat,lng);
-        }catch (Exception ex){
-            return null;
+    private void processListDataModel(){
+        for(int i = 0; i < dataModels.size(); i++){
+            if(dataModels.get(i).getLocation().get(0) == 1000 && dataModels.get(i).getLocation().get(1) == 1000){
+                dataModels.remove(i);
+            }
+            if(dataModels.get(i).getLocation().get(0) == 0 && dataModels.get(i).getLocation().get(1) == 0){
+                dataModels.remove(i);
+            }
         }
     }
 
-    @Override
+  @Override
     public void onPoiClick(PointOfInterest pointOfInterest) {
         Toast.makeText(getActivity(), "Clicked: " +
                         pointOfInterest.name +
@@ -415,6 +436,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
 
     public void setSelectNode(int selectNode){
         this.selectNode = selectNode;
+        moveCamera = true;
     }
 
     @Override
@@ -422,6 +444,5 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
         super.onResume();
         initMapsFragment();
     }
-
 
 }

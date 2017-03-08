@@ -4,7 +4,7 @@ apply plugin: 'me.tatarka.retrolambda'
 
 android {
     compileSdkVersion 25
-    buildToolsVersion '25.0.2'
+    buildToolsVersion '25.0.0'
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -32,6 +32,9 @@ android {
         javaMaxHeapSize "4g"
     }
 }
+ext {
+    supportLibVersion = '25.2.0'  // variable that can be referenced to keep support libs consistent
+}
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
@@ -41,7 +44,7 @@ dependencies {
     // Android Support
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:25.2.0'
-    compile 'com.android.support:design:25.0.0'
+    compile 'com.android.support:design:25.2.0'
     compile ('com.android.support:support-v4:25.2.0') {
         // Force stable version of support-v4
         force = true
@@ -53,7 +56,7 @@ dependencies {
     compile 'com.android.support:recyclerview-v7:25.2.0'
 
     // Google play service
-    //compile 'com.google.android.gms:play-services:9.8.0'
+    compile 'com.google.android.gms:play-services:9.8.0'
     compile 'com.google.android.gms:play-services:10.0.1'
 
     // Butterknife

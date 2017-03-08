@@ -1,12 +1,13 @@
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
+    android:layout_width="wrap_content"
     android:layout_height="wrap_content">
     <ToggleButton
         android:id="@+id/toggle_position"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textOn="PUT On"
-        android:textOff="PUT Off"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:textOn=""
+        android:textOff=""
+        android:background="@drawable/toggle_selector"
         />
 </RelativeLayout>

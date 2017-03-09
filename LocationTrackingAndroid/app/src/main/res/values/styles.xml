@@ -30,11 +30,11 @@
         <item name="android:background">@color/primary</item>
     </style>
 
-    <style name="AppTheme.AppBarOverlay" parent="AppTheme.AppBarOverlay">
+    <style name="AppTheme.AppBarOverlay" parent="Theme.AppCompat.Dialog">
 
     </style>
 
-    <style name="AppTheme.PopupOverlay" parent="AppTheme.PopupOverlay">
+    <style name="AppTheme.PopupOverlay" parent="Theme.AppCompat.DayNight.Dialog">
 
     </style>
 

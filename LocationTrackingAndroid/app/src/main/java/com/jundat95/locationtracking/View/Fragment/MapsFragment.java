@@ -64,13 +64,13 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
     // list temp, save idNode
     private List<Integer> listIdNode = new ArrayList<>();
     // List save list List<DataModel>
-    private List<List<DataModel>> listDataModels = new ArrayList<>();
+    private List<List<DataModel>> listDataModel = new ArrayList<>();
 
     private Handler mHandler;
 
 
-    private boolean onPut = false;
-    private boolean moveCamera = true;
+    private boolean isOnPut = false;
+    private boolean isMoveCamera = true;
     private int selectNode = 0;
 
     public static MapsFragment newInstance(AppCompatActivity context) {
@@ -114,7 +114,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
         mMap = googleMap;
         mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
         // Click position show info
-        mMap.setOnPoiClickListener((GoogleMap.OnPoiClickListener) this);
 
     }
 
@@ -137,13 +136,13 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
 
     public void requestServer() {
 
-        Log.d(Main_Activity,"Start Request");
+        Log.d(Main_Activity,"Request ");
         if (selectNode == 0) {
             getAllPositions();
         } else {
             getPosition(selectNode);
         }
-        Log.d(Main_Activity,"Stop Request------------->>>");
+        Log.d(Main_Activity,"Response ------------->>>");
 
     }
 
@@ -163,11 +162,18 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
             public void onResponse(Call<ResponseModel> call, Response<ResponseModel> response) {
                 if(response.isSuccessful()){
                     ResponseModel responseModel = response.body();
-                    dataModels.addAll(responseModel.getData());
-                    processListDataModel();
+                    for(DataModel item: responseModel.getData()){
+                        if(item.getLocation().get(0) != 1000 && item.getLocation().get(1) != 1000){
+                            if(item.getLocation().get(0) != 0 && item.getLocation().get(1) != 0){
+                                dataModels.add(item);
+                            }
+                        }
+                    }
                     if(dataModels.size() > 0){
                         paintMarkerAll();
                     }else {
+                        removeAllMakers();
+                        removeAllPolylines();
                         Toast.makeText(
                                 context,
                                 "Waiting for location tracking",
@@ -251,20 +257,18 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
                     temp.add(item2);
                 }
             }
-            listDataModels.add(temp);
+            listDataModel.add(temp);
 
         }
 
-        //paintPolyline();
-        //Log.d(Main_Activity,"List Models: "+listDataModels.size());
     }
 
     private void paintPolyline(){
 
-        for(int i = 0; i < listDataModels.size(); i++){
+        for(int i = 0; i < listDataModel.size(); i++){
             int color = PolylineManager.getColors(i);
             List<LatLng> latLngs = new ArrayList<>();
-            for (DataModel item1: listDataModels.get(i)){
+            for (DataModel item1: listDataModel.get(i)){
                 latLngs.add(new LatLng(item1.getLocation().get(0),item1.getLocation().get(1)));
                 //Log.d(Main_Activity,"XXXxxxx: "+item1.getNode());
             }
@@ -280,12 +284,12 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
             listPolyline.add(polyline);
         }
 
-        if(onPut){
+        if(isOnPut){
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(listLatLng.get(listLatLng.size()-1), 30));
         }else {
-            if(listLatLng.size() > 0 && moveCamera){
+            if(listLatLng.size() > 0 && isMoveCamera){
                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(listLatLng.get(listLatLng.size()-1), 30));
-                moveCamera = false;
+                isMoveCamera = false;
             }
         }
 
@@ -299,11 +303,19 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
             public void onResponse(Call<ResponseModel> call, Response<ResponseModel> response) {
                 if(response.isSuccessful()){
                     ResponseModel responseModel = response.body();
-                    dataModels.addAll(responseModel.getData());
-                    processListDataModel();
+                    List<DataModel> listData = responseModel.getData();
+                    for(DataModel item: responseModel.getData()){
+                        if(item.getLocation().get(0) != 1000 && item.getLocation().get(1) != 1000){
+                            if(item.getLocation().get(0) != 0 && item.getLocation().get(1) != 0){
+                                dataModels.add(item);
+                            }
+                        }
+                    }
                     if(dataModels.size() > 0){
                         paintMarker();
                     }else {
+                        removeAllMakers();
+                        removeAllPolylines();
                         Toast.makeText(
                                 context,
                                 "Waiting for location tracking",
@@ -361,12 +373,12 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
 
         listPolyline.add(polyline);
 
-        if(onPut){
+        if(isOnPut){
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(listLatLng.get(listLatLng.size()-1), 30));
         }else {
-            if(listLatLng.size() > 0 && moveCamera){
+            if(listLatLng.size() > 0 && isMoveCamera){
                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(listLatLng.get(listLatLng.size()-1), 30));
-                moveCamera = false;
+                isMoveCamera = false;
             }
         }
 
@@ -375,7 +387,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
 
     public void removeRefuses(){
         dataModels.clear();
-        listDataModels.clear();
+        listDataModel.clear();
         listLatLng.clear();
         listIdNode.clear();
     }
@@ -399,16 +411,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
         }
     }
 
-    private void processListDataModel(){
-        for(int i = 0; i < dataModels.size(); i++){
-            if(dataModels.get(i).getLocation().get(0) == 1000 && dataModels.get(i).getLocation().get(1) == 1000){
-                dataModels.remove(i);
-            }
-            if(dataModels.get(i).getLocation().get(0) == 0 && dataModels.get(i).getLocation().get(1) == 0){
-                dataModels.remove(i);
-            }
-        }
-    }
 
   @Override
     public void onPoiClick(PointOfInterest pointOfInterest) {
@@ -431,12 +433,13 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
     }
 
     public void setOnPut(boolean value){
-       this.onPut = value;
+       this.isOnPut = value;
     }
 
     public void setSelectNode(int selectNode){
         this.selectNode = selectNode;
-        moveCamera = true;
+        isMoveCamera = true;
+
     }
 
     @Override

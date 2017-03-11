@@ -4,8 +4,8 @@
     android:layout_height="wrap_content">
     <ToggleButton
         android:id="@+id/toggle_position"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
         android:textOn=""
         android:textOff=""
         android:background="@drawable/toggle_selector"

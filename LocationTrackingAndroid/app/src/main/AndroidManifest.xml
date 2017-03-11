@@ -33,7 +33,7 @@
             android:theme="@style/AppTheme.Dark" />
         <activity
             android:name="com.jundat95.locationtracking.View.Activity.LoginActivity"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/AppTheme.Dark" />
 
     </application>
 
